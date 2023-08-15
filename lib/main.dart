@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+void main() {
+  runApp(const MyApp());
+}
+
 class Character {
   String name;
-  List<String> dialogues;
 
-  Character(this.name) : dialogues = [];
-
-  String get currentDialogue => dialogues.isNotEmpty ? dialogues.last : '';
+  Character(this.name);
 
   @override
   int get hashCode => name.hashCode;
@@ -17,24 +18,8 @@ class Character {
   }
 }
 
-class Scene {
-  String act;
-  String scene;
-  String title;
-  List<Character> characters;
-
-  Scene(this.act, this.scene, this.title, this.characters);
-
-  // Initialize the list of characters
-  Scene.empty(this.act, this.scene) : title = '', characters = [];
-}
-
-void main() {
-  runApp(const MyApp());
-}
-
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +27,9 @@ class MyApp extends StatelessWidget {
       title: 'Theater Play Writer',
       theme: ThemeData(
         primaryColor: const Color.fromARGB(255, 114, 102, 194),
-        colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color.fromARGB(255, 111, 214, 114)),
+        colorScheme: ColorScheme.fromSwatch().copyWith(
+          secondary: const Color.fromARGB(255, 111, 214, 114),
+        ),
       ),
       home: const PlayWriter(),
     );
@@ -50,248 +37,259 @@ class MyApp extends StatelessWidget {
 }
 
 class PlayWriter extends StatefulWidget {
-  const PlayWriter({Key? key});
+  const PlayWriter({super.key});
 
   @override
   State<PlayWriter> createState() => _PlayWriterState();
 }
 
 class _PlayWriterState extends State<PlayWriter> {
-  TextEditingController playTitleController = TextEditingController();
-  TextEditingController sceneTitleController = TextEditingController();
   TextEditingController characterNameController = TextEditingController();
-  TextEditingController dialogueController = TextEditingController();
-
-  List<Scene> scenes = [];
-  List<Character> characters = [];
+  List<String> script = [];
   int currentAct = 1;
   int currentScene = 1;
+  List<Character> characters = [];
+  Character? selectedCharacter;
+  Character? lastCharacter;
+  List<String> conversation = [];
+  String playTitle = '';
 
-  void _addCharacter() {
-    final characterName = characterNameController.text.trim();
-    if (characterName.isNotEmpty) {
-      setState(() {
-        characters.add(Character(characterName));
-        characterNameController.clear();
-      });
+  void _addCharacter(String name) {
+    if (name.isNotEmpty) {
+      characters.add(Character(name));
+      characterNameController.clear();
+      setState(() {});
     }
   }
 
   void _nextAct() {
-    setState(() {
-      currentAct++;
-      currentScene = 1;
-    });
+    currentAct++;
+    currentScene = 1;
+    script.add('\nAct $currentAct');
+    setState(() {});
   }
 
-  void _showAddDialoguePopup(Character character) {
-    var prueba=3;
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Add Dialogue for ${character.name}'),
-          content: TextField(
-            controller: dialogueController,
-        decoration: InputDecoration(labelText: '${prueba}'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (dialogueController.text.isNotEmpty) {
-                  character.dialogues.add(dialogueController.text);
-                  dialogueController.clear();
-                  Navigator.pop(context);
-                  setState(() {});
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        );
-      },
+  void _navigateToSceneScreen() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SceneScreen(
+          currentAct: currentAct,
+          currentScene: currentScene,
+          characters: characters,
+          addScene: _addScene, 
+          addSaveAndExit: _addAndExit,
+        ),
+      ),
     );
   }
 
-  Widget _buildSceneWidget(Scene scene) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (scenes.indexOf(scene) == 0)
-          Text(
-            playTitleController.text.isNotEmpty ? playTitleController.text : 'Play Title',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        const SizedBox(height: 16),
-        Text(
-          '${scene.act}, ${scene.scene}: ${scene.title}',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        for (var character in scene.characters)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${character.name}:',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child: Text(' - ${character.currentDialogue}'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  _showAddDialoguePopup(character);
-                },
-                child: const Text('Add Dialogue'),
-              ),
-            ],
-          ),
-        ElevatedButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('Add Character to Scene'),
-                  content: SingleChildScrollView(
-                    child: Column(
-                      children: characters
-                          .map((character) => ListTile(
-                                title: Text(character.name),
-                                onTap: () {
-                                  setState(() {
-                                    scene.characters.add(character);
-                                  });
-                                  Navigator.pop(context);
-                                },
-                              ))
-                          .toList(),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-          child: const Text('Add Character to Scene'),
-        ),
-      ],
-    );
+  void _addScene(String sceneTitle) {
+    if (sceneTitle.isNotEmpty) {
+      final sceneHeader = 'Act $currentAct, Scene $currentScene: $sceneTitle';
+      currentScene++;
+      conversation.clear();
+      setState(() {
+        script.add(sceneHeader);
+      });
+    }
   }
 
+void _addAndExit(List<String> sceneTitle) {
+      setState(() {
+        script.addAll(sceneTitle);
+      });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Theater Play Writer')),
+      appBar: AppBar(
+        title: Text('Theater Play Writer: $playTitle'),
+      ),
       body: Row(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: playTitleController,
-                    onChanged: (value) {
-                      setState(() {});
-                    },
-                    decoration: const InputDecoration(labelText: 'Play Title'),
-                  ),
-                  TextField(
-                    controller: characterNameController,
-                    onChanged: (value) {
-                      // setState(() {});
-                    },
-                    onSubmitted: (_) {
-                      _addCharacter();
-                    },
-                    decoration: const InputDecoration(labelText: 'New Character Name'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      _addCharacter();
-                    },
-                    child: const Text('Add Character'),
-                  ),
-                  TextField(
-                    controller: sceneTitleController,
-                    onChanged: (value) {
-                      // setState(() {});
-                    },
-                    onSubmitted: (_) {
-                      final sceneTitle = sceneTitleController.text.trim();
-                      if (sceneTitle.isNotEmpty) {
-                        setState(() {
-                          scenes.add(Scene('Act $currentAct', 'Scene $currentScene', sceneTitle, []));
-                          sceneTitleController.clear();
-                          currentScene++;
-                        });
-                      }
-                    },
-                    decoration: InputDecoration(labelText: 'Scene Title (Act $currentAct, Scene $currentScene)'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      final sceneTitle = sceneTitleController.text.trim();
-                      if (sceneTitle.isNotEmpty) {
-                        setState(() {
-                          scenes.add(Scene('Act $currentAct', 'Scene $currentScene', sceneTitle, []));
-                          sceneTitleController.clear();
-                          currentScene++;
-                        });
-                      }
-                    },
-                    child: const Text('Add Scene'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      _nextAct();
-                    },
-                    child: const Text('Next Act'),
-                  ),
-                  for (var scene in scenes) _buildSceneWidget(scene),
-                ],
-              ),
+            child: ListView.builder(
+              itemCount: script.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(script[index]),
+                );
+              },
             ),
           ),
           SizedBox(
             width: 300,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      'Characters:',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            child: Column(
+              children: [
+                TextField(
+                  decoration: const InputDecoration(labelText: 'Play Title'),
+                  onChanged: (title) {
+                    playTitle = title;
+                    setState(() {});
+                  },
+                ),
+                Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: _navigateToSceneScreen,
+                      child: const Text('Add Scene'),
                     ),
+                    ElevatedButton(
+                      onPressed: _nextAct,
+                      child: const Text('Next Act'),
+                    ),
+                    Text('Act: $currentAct, Scene: $currentScene'),
+                  ],
+                ),
+                TextField(
+                  controller: characterNameController,
+                  decoration: const InputDecoration(labelText: 'New Character Name'),
+                  onSubmitted: (name) {
+                    _addCharacter(name);
+                  },
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _addCharacter(characterNameController.text);
+                  },
+                  child: const Text('Add Character'),
+                ),
+                const SizedBox(height: 16),
+                const Text('Characters:', style: TextStyle(fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: characters.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(characters[index].name),
+                      );
+                    },
                   ),
-                  ...characters.map((character) {
-                    return SizedBox(
-                      width: 300,
-                      child: Column(
-                        children: [
-                          ListTile(
-                            title: Text(character.name),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+class SceneScreen extends StatefulWidget {
+  final int currentAct;
+  final int currentScene;
+  final List<Character> characters;
+  final Function(String) addScene;
+  final Function(List<String>) addSaveAndExit;
+
+
+  const SceneScreen({
+    required this.currentAct,
+    required this.currentScene,
+    required this.characters,
+    required this.addScene,
+    required this.addSaveAndExit,
+    super.key,
+  });
+
+  @override
+  State<SceneScreen> createState() => _SceneScreenState();
+}
+
+class _SceneScreenState extends State<SceneScreen> {
+  TextEditingController sceneTitleController = TextEditingController();
+  TextEditingController dialogueController = TextEditingController();
+  Character? selectedCharacter;
+  Character? lastCharacter;
+  List<String> conversation = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Scene Writer - Act ${widget.currentAct}, Scene ${widget.currentScene}'),
+      ),
+      body: Column(
+        children: [
+          TextField(
+            controller: sceneTitleController,
+            decoration: const InputDecoration(labelText: 'Scene Title'),
+            onSubmitted: (title) {
+              if (title.isNotEmpty) {
+                setState(() {
+                  widget.addScene(title);
+                  conversation.insert(0, 'Act ${widget.currentAct}, Scene ${widget.currentScene}: $title');
+                });
+              }
+            },
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButton<Character>(
+                  hint: const Text('Select Character'),
+                  value: selectedCharacter,
+                  onChanged: (character) {
+                    setState(() {
+                      selectedCharacter = character;
+                    });
+                  },
+                  items: widget.characters.map((Character character) {
+                    return DropdownMenuItem<Character>(
+                      value: character,
+                      child: Text(character.name),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+          TextField(
+            controller: dialogueController,
+            decoration: InputDecoration(
+              labelText: 'Enter Dialogue',
+              enabled: selectedCharacter != null,
+            ),
+            enabled: selectedCharacter != null,
+            onSubmitted: (dialogue) {
+              if (selectedCharacter != null && dialogue.isNotEmpty) {
+                if (lastCharacter != selectedCharacter) {
+                  conversation.add('${selectedCharacter!.name}: $dialogue');
+                  lastCharacter = selectedCharacter;
+                }
+                dialogueController.clear();
+                setState(() {});
+              }
+            },
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: conversation.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(conversation[index]),
+                );
+              },
+            ),
+          ),
+          ElevatedButton(
+            onPressed: _addAndExit,
+            child: const Text('Add Scene and Exit'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _addAndExit() {
+    
+    // if (lastCharacter != null ) {
+    //   conversation.add('${lastCharacter!.name}: ${dialogueController.text}');
+     widget.addSaveAndExit(conversation);
+    // }
+    
+
+    Navigator.pop(context, conversation);
   }
 }

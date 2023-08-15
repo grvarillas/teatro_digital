@@ -32,15 +32,15 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Theater Play Writer',
       theme: ThemeData(
-        primaryColor: Color.fromARGB(255, 114, 102, 194),
-        colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Color.fromARGB(255, 111, 214, 114)),
+        primaryColor: const Color.fromARGB(255, 114, 102, 194),
+        colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color.fromARGB(255, 111, 214, 114)),
       ),
       home: const PlayWriter(),
     );
@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
 }
 
 class PlayWriter extends StatefulWidget {
-  const PlayWriter({Key? key});
+  const PlayWriter({super.key});
 
   @override
   State<PlayWriter> createState() => _PlayWriterState();
@@ -93,7 +93,7 @@ class _PlayWriterState extends State<PlayWriter> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add Dialogue'),
+          title: const Text('Add Dialogue'),
           content: TextField(
             controller: dialogueController,
             onSubmitted: (value) {
@@ -105,14 +105,14 @@ class _PlayWriterState extends State<PlayWriter> {
             onChanged: (value) {
               setState(() {});
             },
-            decoration: InputDecoration(labelText: 'Dialogue'),
+            decoration: const InputDecoration(labelText: 'Dialogue'),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -121,7 +121,7 @@ class _PlayWriterState extends State<PlayWriter> {
                 Navigator.pop(context);
                 setState(() {});
               },
-              child: Text('Add'),
+              child: const Text('Add'),
             ),
           ],
         );
@@ -139,7 +139,7 @@ class _PlayWriterState extends State<PlayWriter> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Theater Play Writer')),
+      appBar: AppBar(title: const Text('Theater Play Writer')),
       body: Row(
         children: [
           Expanded(
@@ -152,7 +152,7 @@ class _PlayWriterState extends State<PlayWriter> {
                     onChanged: (value) {
                       setState(() {});
                     },
-                    decoration: InputDecoration(labelText: 'Play Title'),
+                    decoration: const InputDecoration(labelText: 'Play Title'),
                   ),
                   TextField(
                     controller: characterNameController,
@@ -162,13 +162,13 @@ class _PlayWriterState extends State<PlayWriter> {
                     onSubmitted: (_) {
                       _addCharacter();
                     },
-                    decoration: InputDecoration(labelText: 'New Character Name'),
+                    decoration: const InputDecoration(labelText: 'New Character Name'),
                   ),
                   ElevatedButton(
                     onPressed: () {
                       _addCharacter();
                     },
-                    child: Text('Add Character'),
+                    child: const Text('Add Character'),
                   ),
                   TextField(
                     controller: sceneTitleController,
@@ -184,13 +184,13 @@ class _PlayWriterState extends State<PlayWriter> {
                     onPressed: () {
                       _addScene();
                     },
-                    child: Text('Add Scene'),
+                    child: const Text('Add Scene'),
                   ),
                   ElevatedButton(
                     onPressed: () {
                       _nextAct();
                     },
-                    child: Text('Next Act'),
+                    child: const Text('Next Act'),
                   ),
                   for (var scene in scenes)
                     Column(
@@ -199,7 +199,7 @@ class _PlayWriterState extends State<PlayWriter> {
                       children: [
                         Text(
                           '${scene.act}, ${scene.scene}: ${scene.title}',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         for (var character in scene.characters)
                           Text(
@@ -211,7 +211,7 @@ class _PlayWriterState extends State<PlayWriter> {
                               context: context,
                               builder: (context) {
                                 return AlertDialog(
-                                  title: Text('Add Character to Scene'),
+                                  title: const Text('Add Character to Scene'),
                                   content: SingleChildScrollView(
                                     child: Column(
                                       children: characters
@@ -231,13 +231,13 @@ class _PlayWriterState extends State<PlayWriter> {
                               },
                             );
                           },
-                          child: Text('Add Character to Scene'),
+                          child: const Text('Add Character to Scene'),
                         ),
                         ElevatedButton(
                           onPressed: () {
                             _addCharacterToScene(scene, scene.characters.first);
                           },
-                          child: Text('Add Dialogue'),
+                          child: const Text('Add Dialogue'),
                         ),
                       ],
                     ),
@@ -251,8 +251,8 @@ class _PlayWriterState extends State<PlayWriter> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
                     child: Text(
                       'Characters:',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

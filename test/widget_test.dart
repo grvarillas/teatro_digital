@@ -27,15 +27,15 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mi Primera Obra de Teatro',
       theme: ThemeData(
-        primaryColor: Color.fromARGB(255, 114, 102, 194),
-        colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Color.fromARGB(255, 111, 214, 114)),
+        primaryColor: const Color.fromARGB(255, 114, 102, 194),
+        colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color.fromARGB(255, 111, 214, 114)),
       ),
       home: const Names(),
     );
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
 }
 
 class Names extends StatefulWidget {
-  const Names({Key? key});
+  const Names({super.key});
 
   @override
   State<Names> createState() => _NamesState();
@@ -57,7 +57,7 @@ class _NamesState extends State<Names> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Enter Scene and Character Names')),
+      appBar: AppBar(title: const Text('Enter Scene and Character Names')),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -66,7 +66,7 @@ class _NamesState extends State<Names> {
               child: TextField(
                 controller: sceneTitleController,
                 onChanged: (value) => sceneTitleController.text = value,
-                decoration: InputDecoration(labelText: 'Scene Title'),
+                decoration: const InputDecoration(labelText: 'Scene Title'),
               ),
             ),
             ElevatedButton(
@@ -75,7 +75,7 @@ class _NamesState extends State<Names> {
                   scenes.add(Scene(sceneTitleController.text, []));
                 });
               },
-              child: Text('Add Scene'),
+              child: const Text('Add Scene'),
             ),
             for (var scene in scenes)
               Column(
@@ -85,7 +85,7 @@ class _NamesState extends State<Names> {
                     child: TextField(
                       controller: TextEditingController(text: scene.title),
                       onChanged: (value) => scene.title = value,
-                      decoration: InputDecoration(labelText: 'Scene Title'),
+                      decoration: const InputDecoration(labelText: 'Scene Title'),
                     ),
                   ),
                   for (var character in scene.characters)
@@ -94,7 +94,7 @@ class _NamesState extends State<Names> {
                       child: TextField(
                         controller: TextEditingController(text: character.name),
                         onChanged: (value) => character.name = value,
-                        decoration: InputDecoration(labelText: 'Character Name'),
+                        decoration: const InputDecoration(labelText: 'Character Name'),
                       ),
                     ),
                   ElevatedButton(
@@ -103,7 +103,7 @@ class _NamesState extends State<Names> {
                         scene.characters.add(Character('', []));
                       });
                     },
-                    child: Text('Add Character'),
+                    child: const Text('Add Character'),
                   ),
                 ],
               ),
@@ -117,7 +117,7 @@ class _NamesState extends State<Names> {
 class SceneDialogues extends StatefulWidget {
   final Scene scene;
 
-  const SceneDialogues({required this.scene});
+  const SceneDialogues({super.key, required this.scene});
 
   @override
   State<SceneDialogues> createState() => _SceneDialoguesState();
@@ -129,7 +129,7 @@ class _SceneDialoguesState extends State<SceneDialogues> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Enter Dialogues')),
+      appBar: AppBar(title: const Text('Enter Dialogues')),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -144,11 +144,11 @@ class _SceneDialoguesState extends State<SceneDialogues> {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: Text('Add Dialogue'),
+              title: const Text('Add Dialogue'),
               content: TextField(
                 controller: dialogueController,
                 onChanged: (value) => dialogueController.text = value,
-                decoration: InputDecoration(labelText: 'Dialogue'),
+                decoration: const InputDecoration(labelText: 'Dialogue'),
               ),
               actions: [
                 ElevatedButton(
@@ -158,13 +158,13 @@ class _SceneDialoguesState extends State<SceneDialogues> {
                     });
                     Navigator.pop(context);
                   },
-                  child: Text('Add'),
+                  child: const Text('Add'),
                 ),
               ],
             ),
           );
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -182,11 +182,11 @@ class _SceneDialoguesState extends State<SceneDialogues> {
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: Text('Add Dialogue'),
+                title: const Text('Add Dialogue'),
                 content: TextField(
                   controller: dialogueController,
                   onChanged: (value) => dialogueController.text = value,
-                  decoration: InputDecoration(labelText: 'Dialogue'),
+                  decoration: const InputDecoration(labelText: 'Dialogue'),
                 ),
                 actions: [
                   ElevatedButton(
@@ -196,13 +196,13 @@ class _SceneDialoguesState extends State<SceneDialogues> {
                       });
                       Navigator.pop(context);
                     },
-                    child: Text('Add'),
+                    child: const Text('Add'),
                   ),
                 ],
               ),
             );
           },
-          child: Text('Add Dialogue'),
+          child: const Text('Add Dialogue'),
         ),
       ],
     );
