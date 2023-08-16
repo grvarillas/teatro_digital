@@ -47,7 +47,7 @@ class _PlayWriterState extends State<PlayWriter> {
   TextEditingController characterNameController = TextEditingController();
   List<String> script = [];
   int currentAct = 1;
-  int currentScene = 1;
+  int currentScene = 1; // Change back to 1
   List<Character> characters = [];
   Character? selectedCharacter;
   Character? lastCharacter;
@@ -77,7 +77,7 @@ class _PlayWriterState extends State<PlayWriter> {
           currentAct: currentAct,
           currentScene: currentScene,
           characters: characters,
-          addScene: _addScene, 
+          addScene: _addScene,
           addSaveAndExit: _addAndExit,
         ),
       ),
@@ -86,20 +86,20 @@ class _PlayWriterState extends State<PlayWriter> {
 
   void _addScene(String sceneTitle) {
     if (sceneTitle.isNotEmpty) {
-      final sceneHeader = 'Act $currentAct, Scene $currentScene: $sceneTitle';
+      // final sceneHeader = 'Act $currentAct, Scene $currentScene: $sceneTitle';
+      // script.add(sceneHeader);
       currentScene++;
       conversation.clear();
-      setState(() {
-        script.add(sceneHeader);
-      });
+      setState(() {});
     }
   }
 
-void _addAndExit(List<String> sceneTitle) {
-      setState(() {
-        script.addAll(sceneTitle);
-      });
+  void _addAndExit(List<String> sceneConversation) {
+    script.addAll(sceneConversation);
+    Navigator.pop(context); // Pop the SceneScreen
+    setState(() {}); // Trigger a rebuild of the script ListView.builder
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -183,7 +183,6 @@ class SceneScreen extends StatefulWidget {
   final Function(String) addScene;
   final Function(List<String>) addSaveAndExit;
 
-
   const SceneScreen({
     required this.currentAct,
     required this.currentScene,
@@ -203,6 +202,11 @@ class _SceneScreenState extends State<SceneScreen> {
   Character? selectedCharacter;
   Character? lastCharacter;
   List<String> conversation = [];
+
+  void _addAndExit() {
+  widget.addSaveAndExit(conversation);
+  Navigator.popUntil(context, (route) => route.isFirst);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -281,15 +285,5 @@ class _SceneScreenState extends State<SceneScreen> {
       ),
     );
   }
-
-  void _addAndExit() {
-    
-    // if (lastCharacter != null ) {
-    //   conversation.add('${lastCharacter!.name}: ${dialogueController.text}');
-     widget.addSaveAndExit(conversation);
-    // }
-    
-
-    Navigator.pop(context, conversation);
-  }
 }
+
