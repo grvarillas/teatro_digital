@@ -6,14 +6,15 @@ void main() {
 
 class Character {
   String name;
+  String actorName;
 
-  Character(this.name);
+  Character(this.name, this.actorName);
 
   @override
   int get hashCode => name.hashCode;
 
   @override
-  bool operator ==(other) {
+  bool operator ==(Object other) {
     return other is Character && name == other.name;
   }
 }
@@ -46,24 +47,30 @@ class PlayWriter extends StatefulWidget {
 class _PlayWriterState extends State<PlayWriter> {
   TextEditingController characterNameController = TextEditingController();
   List<String> script = [];
-  int currentAct = 1;
-  int currentScene = 1; // Change back to 1
-  List<Character> characters = [];
+  int currentAct = 1; // Start with Act 1
+  int currentScene = 1;
+  bool isFirstActCompleted = false;
+  List<Character> cast = [];
   Character? selectedCharacter;
-  Character? lastCharacter;
   List<String> conversation = [];
   String playTitle = '';
+  String playwrightText = '';
 
-  void _addCharacter(String name) {
+  void _addCharacter(String name, String actorName) {
     if (name.isNotEmpty) {
-      characters.add(Character(name));
+      cast.add(Character(name, actorName));
       characterNameController.clear();
       setState(() {});
     }
   }
 
   void _nextAct() {
-    currentAct++;
+    if (!isFirstActCompleted) {
+      isFirstActCompleted = true;
+      currentAct = 1;
+    } else {
+      currentAct++;
+    }
     currentScene = 1;
     script.add('\nAct $currentAct');
     setState(() {});
@@ -76,7 +83,7 @@ class _PlayWriterState extends State<PlayWriter> {
         builder: (context) => SceneScreen(
           currentAct: currentAct,
           currentScene: currentScene,
-          characters: characters,
+          characters: cast,
           addScene: _addScene,
           addSaveAndExit: _addAndExit,
         ),
@@ -86,8 +93,6 @@ class _PlayWriterState extends State<PlayWriter> {
 
   void _addScene(String sceneTitle) {
     if (sceneTitle.isNotEmpty) {
-      // final sceneHeader = 'Act $currentAct, Scene $currentScene: $sceneTitle';
-      // script.add(sceneHeader);
       currentScene++;
       conversation.clear();
       setState(() {});
@@ -96,15 +101,15 @@ class _PlayWriterState extends State<PlayWriter> {
 
   void _addAndExit(List<String> sceneConversation) {
     script.addAll(sceneConversation);
-    Navigator.pop(context); // Pop the SceneScreen
-    setState(() {}); // Trigger a rebuild of the script ListView.builder
+    Navigator.pop(context);
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Theater Play Writer: $playTitle'),
+        title: const Text('Theater Play Writer'),
       ),
       body: Row(
         children: [
@@ -121,6 +126,7 @@ class _PlayWriterState extends State<PlayWriter> {
           SizedBox(
             width: 300,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 TextField(
                   decoration: const InputDecoration(labelText: 'Play Title'),
@@ -128,7 +134,28 @@ class _PlayWriterState extends State<PlayWriter> {
                     playTitle = title;
                     setState(() {});
                   },
+                  onSubmitted: (_) {
+                    conversation.add('Play Title: $playTitle');
+                    setState(() {});
+                  },
                 ),
+                if (playTitle.isNotEmpty)
+                  TextField(
+                    decoration: const InputDecoration(labelText: 'Playwright/Author'),
+                    onChanged: (playwright) {
+                      setState(() {
+                        playwrightText = playwright;
+                      });
+                    },
+                    onSubmitted: (_) {
+                      conversation.add('Playwright text: $playwrightText');
+                      conversation.add('Current Act: $currentAct');
+                      setState(() {
+                        currentAct = 1;
+                      });
+                    },
+                    enabled: playTitle.isNotEmpty,
+                  ),
                 Row(
                   children: [
                     ElevatedButton(
@@ -142,27 +169,52 @@ class _PlayWriterState extends State<PlayWriter> {
                     Text('Act: $currentAct, Scene: $currentScene'),
                   ],
                 ),
-                TextField(
-                  controller: characterNameController,
-                  decoration: const InputDecoration(labelText: 'New Character Name'),
-                  onSubmitted: (name) {
-                    _addCharacter(name);
-                  },
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    _addCharacter(characterNameController.text);
-                  },
-                  child: const Text('Add Character'),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      controller: characterNameController,
+                      decoration: const InputDecoration(labelText: 'New Character Name'),
+                      onSubmitted: (name) {
+                        _addCharacter(name, '');
+                      },
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        _addCharacter(characterNameController.text, '');
+                      },
+                      child: const Text('Add Character'),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
-                const Text('Characters:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Cast:', style: TextStyle(fontWeight: FontWeight.bold)),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: characters.length,
+                    itemCount: cast.length,
                     itemBuilder: (context, index) {
+                      final character = cast[index];
                       return ListTile(
-                        title: Text(characters[index].name),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(character.name),
+                            ),
+                            SizedBox(
+                              width: 150,
+                              child: TextField(
+                                onChanged: (actorName) {
+                                  character.actorName = actorName;
+                                  setState(() {});
+                                },
+                                decoration: const InputDecoration(
+                                  labelText: 'Actor Name',
+                                  contentPadding: EdgeInsets.symmetric(vertical: 0),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     },
                   ),
@@ -204,9 +256,9 @@ class _SceneScreenState extends State<SceneScreen> {
   List<String> conversation = [];
 
   void _addAndExit() {
-  widget.addSaveAndExit(conversation);
-  Navigator.popUntil(context, (route) => route.isFirst);
-}
+    widget.addSaveAndExit(conversation);
+    Navigator.popUntil(context, (route) => route.isFirst);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -286,4 +338,3 @@ class _SceneScreenState extends State<SceneScreen> {
     );
   }
 }
-
